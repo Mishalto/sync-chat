@@ -16,10 +16,13 @@ tcp::acceptor acceptor(io_context, ep);
 
 int main()
 {
-    // Waiting client
+    // Start accepting connections
     auto socket_ptr = std::make_shared<tcp::socket>(io_context);
     std::cout << "Waiting client...\n";
     acceptor.accept(*socket_ptr);
+
+    // Confirm connection
+    std::cout << "Client connected\n";
 
     return 0;
 }
