@@ -15,22 +15,46 @@ boost::system::error_code ec;
 tcp::endpoint ep(tcp::v4(), port);
 tcp::acceptor acceptor(io_context, ep);
 
+// This is where we send
+void send_message(std::shared_ptr<tcp::socket>& socket_ptr)
+{
+    std::string message;
+    std::cout << "Mishalto: ";
+    std::getline(std::cin, message);
+
+    boost::asio::write(*socket_ptr, boost::asio::buffer(message));
+}
+
+// This is where is receive
+std::string receive_message(std::shared_ptr<tcp::socket>& socket_ptr)
+{
+    std::array<char, 1024> data;
+    size_t length = socket_ptr->read_some(boost::asio::buffer(data));
+
+    return std::string(data.data(), length);
+}
+
 int main()
 {
-    // Infinity loop
-    for (;;)
-    {
-        // Start accepting connections
-        auto socket_ptr = std::make_shared<tcp::socket>(io_context);
-        std::cout << "Waiting client...\n";
-        acceptor.accept(*socket_ptr, ec);
+    // For correct error display
+    setlocale(LC_ALL, "");
 
-        // Accept error handling
-        if (ec) {
-            std::cerr << "Accept failed: " << ec.what() << '\n';
-        } else {
-            std::cout << "Client connected.\n";
-        }
+    // Start accepting connections
+    auto socket_ptr = std::make_shared<tcp::socket>(io_context);
+    std::cout << "Waiting client...\n";
+    acceptor.accept(*socket_ptr, ec);
+
+    // Accept error handling
+    if (ec) {
+        std::cerr << "Accept failed: " << ec.message() << '\n';
+    } else {
+        std::cout << "Client connected.\n";
+    }
+
+    for(;;)
+    {
+        send_message(socket_ptr);
+        std::cout << receive_message(socket_ptr) << '\n';
     }
 
     return 0;
