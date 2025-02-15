@@ -17,6 +17,7 @@ tcp::acceptor acceptor(io_context, ep);
 
 int main()
 {
+    // Infinity loop
     for (;;)
     {
         // Start accepting connections
