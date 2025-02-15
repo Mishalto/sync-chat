@@ -23,7 +23,15 @@ void send_message(std::shared_ptr<tcp::socket>& socket_ptr)
     std::cout << "Lempa: ";
     std::getline(std::cin, message);
 
-    boost::asio::write(*socket_ptr, boost::asio::buffer(message));
+    // Send message to server
+    boost::asio::write(*socket_ptr, boost::asio::buffer(message), ec);
+
+    // Error handling
+    // Maybe bad practice, maybe need rework
+    if(ec) {
+        std::cerr << "Sending error!\n";
+        std::cerr << ec.message() << '\n';
+    }
 }
 
 // This is where is receive

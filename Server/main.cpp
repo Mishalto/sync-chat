@@ -28,8 +28,16 @@ void send_message(std::shared_ptr<tcp::socket>& socket_ptr)
 // This is where is receive
 std::string receive_message(std::shared_ptr<tcp::socket>& socket_ptr)
 {
+    // Start reading information from the socket
     std::array<char, 1024> data;
-    size_t length = socket_ptr->read_some(boost::asio::buffer(data));
+    size_t length = socket_ptr->read_some(boost::asio::buffer(data), ec);
+
+    // Temporary solution, probably bad practice
+    if (ec) {
+        std::cerr << "Read error!\n";
+        std::cerr << ec.message() << '\n';
+        return "<blank>";
+    }
 
     return std::string(data.data(), length);
 }
@@ -51,6 +59,9 @@ int main()
         std::cout << "Client connected.\n";
     }
 
+    // Infinity loop of communication
+    // In progress
+    // Needs to be finalized
     for(;;)
     {
         send_message(socket_ptr);
