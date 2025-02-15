@@ -19,12 +19,13 @@ int main()
     // Trying to connect to the server
     auto socket_ptr = std::make_shared<tcp::socket>(io_context);
     socket_ptr->connect(ep, ec);
-    if(ec){
-        std::cerr << "Connection error: " << ec.what() << '\n';
-    }
 
-    // Confirm connect
-    std::cout << "Connected\n";
+    // Connection error handling
+    if (ec) {
+        std::cerr << "Connection error: " << ec.what() << '\n';
+    } else {
+        std::cout << "Connected\n";
+    }
 
     return 0;
 }

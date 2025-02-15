@@ -17,16 +17,20 @@ tcp::acceptor acceptor(io_context, ep);
 
 int main()
 {
-    // Start accepting connections
-    auto socket_ptr = std::make_shared<tcp::socket>(io_context);
-    std::cout << "Waiting client...\n";
-    acceptor.accept(*socket_ptr, ec);
-    if(ec){
-        std::cerr << "Accept failed: " << ec.what() << '\n';
-    }
+    for (;;)
+    {
+        // Start accepting connections
+        auto socket_ptr = std::make_shared<tcp::socket>(io_context);
+        std::cout << "Waiting client...\n";
+        acceptor.accept(*socket_ptr, ec);
 
-    // Confirm connection
-    std::cout << "Client connected\n";
+        // Accept error handling
+        if (ec) {
+            std::cerr << "Accept failed: " << ec.what() << '\n';
+        } else {
+            std::cout << "Client connected.\n";
+        }
+    }
 
     return 0;
 }
