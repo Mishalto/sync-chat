@@ -26,7 +26,7 @@ void send_message(std::shared_ptr<tcp::socket>& socket_ptr)
 }
 
 // This is where is receive
-std::string receive_message(std::shared_ptr<tcp::socket>& socket_ptr)
+void receive_message(std::shared_ptr<tcp::socket>& socket_ptr)
 {
     // Start reading information from the socket
     std::array<char, 1024> data;
@@ -36,10 +36,10 @@ std::string receive_message(std::shared_ptr<tcp::socket>& socket_ptr)
     if (ec) {
         std::cerr << "Read error!\n";
         std::cerr << ec.message() << '\n';
-        return "<blank>";
+        std::cout << "<blank>\n";
     }
 
-    return std::string(data.data(), length);
+    std::cout << std::string(data.data(), length) << '\n';
 }
 
 int main()
@@ -65,7 +65,7 @@ int main()
     for(;;)
     {
         send_message(socket_ptr);
-        std::cout << receive_message(socket_ptr) << '\n';
+        receive_message(socket_ptr);
     }
 
     return 0;
