@@ -14,7 +14,7 @@ boost::asio::io_context io_context;
 boost::system::error_code ec;
 
 // Server addr
-tcp::endpoint ep(boost::asio::ip::make_address_v4("92.101.11.188"), port);
+tcp::endpoint ep(boost::asio::ip::make_address_v4("127.0.0.1"), port);
 
 // This is where we send
 void send_message(std::shared_ptr<tcp::socket>& socket_ptr)
