@@ -1,7 +1,6 @@
 #include <boost/asio.hpp>
 #include <iostream>
 #include <memory>
-#include <vector>
 
 using boost::asio::ip::tcp;
 
@@ -16,6 +15,7 @@ boost::system::error_code ec;
 tcp::endpoint ep(tcp::v4(), port);
 tcp::acceptor acceptor(io_context, ep);
 
+// Its just checking the message for commands
 bool commands(std::string_view command)
 {
     constexpr std::string_view exit = "/exit";
@@ -31,7 +31,7 @@ bool send_message(std::shared_ptr<tcp::socket>& socket_ptr)
 {
     // Get message to send
     std::string message;
-    std::cout << "Mishalto: ";
+    std::cout << "Server: ";
     std::getline(std::cin, message);
 
     // Cheking for a desire to get out
@@ -49,7 +49,7 @@ bool send_message(std::shared_ptr<tcp::socket>& socket_ptr)
 }
 
 // This is where is receive
-void receive_message(std::shared_ptr<tcp::socket> &socket_ptr)
+bool receive_message(std::shared_ptr<tcp::socket>& socket_ptr)
 {
     // Start reading information from the socket
     std::array<char, 1024> data;
@@ -57,12 +57,21 @@ void receive_message(std::shared_ptr<tcp::socket> &socket_ptr)
 
     // Error handling
     if (ec) {
-        std::cerr << "Read error!\n";
-        std::cerr << ec.message() << '\n';
+        if(ec == boost::asio::error::eof) {
+            std::cout << "The server dropped the connection\n";
+        }
+        else
+        {
+            std::cerr << "Read error!\n";
+            std::cerr << ec.message() << '\n';
+        }
+        return false;
     }
 
     // Retrieve/извлекаем the message
     std::cout << std::string(data.data(), length) << '\n';
+
+    return true;
 }
 
 int main()
@@ -95,12 +104,15 @@ int main()
     // Needs to be finalized
     for(;;)
     {
-        // Its a little confusing here
+        // Its a little confusing here / Это немного запутанно
         // But reads like this, if sending a message sends false, it is a loop break
         if (!send_message(socket_ptr)) {
             break;
         }
-        receive_message(socket_ptr);
+        if(receive_message(socket_ptr)) {
+        } else {
+            break;
+        }
     }
 
     // The end!

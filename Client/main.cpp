@@ -16,39 +16,62 @@ boost::system::error_code ec;
 // Server addr
 tcp::endpoint ep(boost::asio::ip::make_address_v4("127.0.0.1"), port);
 
-// This is where we send
-void send_message(std::shared_ptr<tcp::socket>& socket_ptr)
+// Its just checking the message for commands
+bool commands(std::string_view command)
 {
+    constexpr std::string_view exit = "/exit";
+    if (command == exit) {
+        return true;
+    }
+
+    return false;
+}
+
+// This is where we send
+bool send_message(std::shared_ptr<tcp::socket>& socket_ptr)
+{
+    // Get message to send
     std::string message;
-    std::cout << "Lempa: ";
+    std::cout << "Client: ";
     std::getline(std::cin, message);
 
-    // Send message to server
+    // Cheking for a desire to get out
+    if(commands(message)) {
+        return false;
+    }
+    // Message transportation
     boost::asio::write(*socket_ptr, boost::asio::buffer(message), ec);
 
     // Error handling
-    // Maybe bad practice, maybe need rework
     if (ec) {
-        std::cerr << "Sending error!\n";
-        std::cerr << ec.message() << '\n';
+        std::cout << "Writing error!\n"<< '\n' << ec.message() << '\n';
     }
+    return true;
 }
-
 // This is where is receive
-std::string receive_message(std::shared_ptr<tcp::socket>& socket_ptr)
+bool receive_message(std::shared_ptr<tcp::socket>& socket_ptr)
 {
     // Start reading information from the socket
     std::array<char, 1024> data;
     size_t length = socket_ptr->read_some(boost::asio::buffer(data), ec);
 
-    // Temporary solution, probably bad practice
+    // Error handling
     if (ec) {
-        std::cerr << "Read error!\n";
-        std::cerr << ec.message() << '\n';
-        return "<blank>";
+        if(ec == boost::asio::error::eof) {
+            std::cout << "The server dropped the connection\n";
+        }
+        else
+        {
+            std::cerr << "Read error!\n";
+            std::cerr << ec.message() << '\n';
+        }
+        return false;
     }
 
-    return std::string(data.data(), length);
+    // Retrieve/извлекаем the message
+    std::cout << std::string(data.data(), length) << '\n';
+
+    return true;
 }
 
 int main()
@@ -57,11 +80,11 @@ int main()
     setlocale(LC_ALL, "");
 
     std::cout << "Trying to connect to server...\n";
-    bool try_to_connect = true;
 
     auto socket_ptr = std::make_shared<tcp::socket>(io_context);
 
     // Infinity loop for connection
+    bool try_to_connect = true;
     while(try_to_connect)
     {
         // Starting the connection
@@ -83,9 +106,20 @@ int main()
     // Needs to be finalized
     for(;;)
     {
-        std::cout << receive_message(socket_ptr) << '\n';
-        send_message(socket_ptr);
+        // Its a little confusing here / Это немного запутанно
+        // But reads like this / но читается так, if send message sends false, it is a loop break
+        if(receive_message(socket_ptr)) {}
+        else {
+            break;
+        }
+
+        if (!send_message(socket_ptr)) {
+            break;
+        }
     }
+
+    // The end
+    std::cout << "This communication is over, thank you!\n";
 
     return 0;
 }
