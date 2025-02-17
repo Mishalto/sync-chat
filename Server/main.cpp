@@ -19,11 +19,8 @@ tcp::acceptor acceptor(io_context, ep);
 bool commands(std::string_view command)
 {
     constexpr std::string_view exit = "/exit";
-    if (command == exit) {
-        return true;
-    }
 
-    return false;
+    return command == exit;
 }
 
 // This is where we send
@@ -58,7 +55,7 @@ bool receive_message(std::shared_ptr<tcp::socket>& socket_ptr)
     // Error handling
     if (ec) {
         if(ec == boost::asio::error::eof) {
-            std::cout << "The server dropped the connection\n";
+            std::cout << "The cleint dropped the connection\n";
         }
         else
         {

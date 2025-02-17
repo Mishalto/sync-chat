@@ -20,11 +20,8 @@ tcp::endpoint ep(boost::asio::ip::make_address_v4("127.0.0.1"), port);
 bool commands(std::string_view command)
 {
     constexpr std::string_view exit = "/exit";
-    if (command == exit) {
-        return true;
-    }
 
-    return false;
+    return command == exit;
 }
 
 // This is where we send
