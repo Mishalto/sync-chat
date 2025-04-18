@@ -1,18 +1,26 @@
 cmake_minimum_required(VERSION 3.15)
-project(Client)
+project(Server)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-set(CMAKE_CXX_COMPILER "E:/Regular/VS Code/LLVM/bin/clang++.exe")
+include(FetchContent)
 
-set(BOOST_ROOT "D:/Libs/boost_1_87_0")
+FetchContent_Declare(
+  boost
+  GIT_REPOSITORY https://github.com/boostorg/boost.git
+  GIT_TAG boost-1.87.0
+)
+FetchContent_MakeAvailable(boost)
 
-add_executable(Client main.cpp)
+find_package(Boost REQUIRED COMPONENTS asio)
 
-target_include_directories(Client PRIVATE ${BOOST_ROOT})
+add_executable(Server main.cpp)
 
-target_include_directories(Client PRIVATE include)
+target_include_directories(Server PRIVATE ${Boost_INCLUDE_DIRS})
+target_include_directories(Server PRIVATE include)
 
-target_compile_options(Client PRIVATE -Wall -Wextra -Werror)
+target_link_libraries(Server PRIVATE Boost::asio)
+
+target_compile_options(Server PRIVATE -Wall -Wextra -Werror)
